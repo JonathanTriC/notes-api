@@ -8,28 +8,28 @@ const app = express();
 
 app.use(express.json());
 
-app.get("/notes", (req, res) => {
-	fs.readFile(__dirname + "/" + "notes.json", "utf-8", (err, data) => {
-		if (err) {
-			return console.error(err);
-		}
+app.get("/notes", async (req, res) => {
+	try {
+		const notes = await Note.find({});
 
-		res.status(200).send(data);
-	});
+		res.send(notes);
+	} catch (error) {
+		console.log("Error get: ", error);
+		res.status(500).send(error);
+	}
 });
 
-app.post("/notes", (req, res) => {
+app.post("/notes", async (req, res) => {
 	const note = new Note(req.body);
 
-	note
-		.save()
-		.then(() => {
-			res.status(200).send(note);
-		})
-		.catch((err) => {
-			console.log("Error post: ", err);
-			res.status(500).send(err);
-		});
+	try {
+		await note.save();
+
+		res.status(200).send(note);
+	} catch (error) {
+		console.log("Error post: ", error);
+		res.status(500).send(error);
+	}
 });
 
 app.listen(3000, () => {
